@@ -4,42 +4,52 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-List<string> lines = File.ReadAllLines(@$"C:\Users\johns\Documents\AdventOfCode\Day2\AoCDay2\input.txt").ToList();
-
-int safeReps = 0;
-int unsafeReps = 0;
-
-// Get lines 
-foreach (string report in lines)
+namespace AocDay2 
 {
-    var levels = report.Split(" "); 
-    var unsafeLevels = 0;
-    var increases = new bool[levels.Length - 1]; 
-    var prevLvl = Convert.ToInt16(levels[0]);
-    var i = 1; 
-    
-          
-    while (i < levels.Length)
-    {       
-        var currLvl = Convert.ToInt16(levels[i]);
-        int amount = Math.Abs(currLvl - prevLvl);
-        
-        increases[i - 1] = currLvl > prevLvl;
-        
-        if (amount > 3 || amount == 0)
-            unsafeLevels++;    
+    public class Program 
+    {
+        public static void Main(string[] args) 
+        {
+            List<string> lines = File.ReadAllLines(@"../../../input.txt").ToList();
 
-        i++;
-        prevLvl = currLvl; 
-    }    
+            int safeReps = 0;
 
-    var increased = increases.Count(x => x);
-    var decreased = increases.Count(x => !x);
+            // Get lines 
+            foreach (string report in lines)
+            {
+                var levels = report.Split(" "); 
+                var unsafeLevels = 0;
+                var prevLvl = Convert.ToInt16(levels[0]);
+                var i = 1; 
+                bool ignore = false;
+                
+                while (i < levels.Length && unsafeLevels < 2)
+                {       
+                    var currLvl = Convert.ToInt16(levels[i]);
+                    var nextLvl = i < levels.Length - 1 ? Convert.ToInt16(levels[i + 1]) : currLvl;
+                    int amount = Math.Abs(currLvl - prevLvl);
+                    ignore = false;
+                    
+                    var currInc = currLvl > prevLvl;
+                    var nextInc = currLvl < nextLvl;
 
-    if (unsafeLevels > 1 || (increased > 1 && decreased > 1))    
-        unsafeReps++;    
-    else
-        safeReps++;    
+                    if (amount > 3 || amount == 0 || currInc != nextInc)
+                    {
+                        unsafeLevels++;
+                        ignore = unsafeLevels < 2;
+                    }
+
+                    if (!ignore)
+                        prevLvl = currLvl;
+
+                    i++;
+                }      
+
+                if (unsafeLevels <= 1)
+                    safeReps++;          
+            }
+
+            Console.WriteLine($"The safe reports are: {safeReps}.");
+        }
+    }
 }
-
-Console.WriteLine($"The safe levels are: {safeReps}. The unsafe levels are {unsafeReps}");
